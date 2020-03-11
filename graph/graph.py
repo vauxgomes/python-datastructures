@@ -44,6 +44,60 @@ class Digraph:
         if bidirected:
             self.add_edge(j, i, w)
 
+    def dijkstra(self, u, v):
+        '''
+            Note: This function considers only the weight of the first edged
+        '''
+
+        unvisited = self.__vertices.copy()
+        visited = []
+
+        # Let all distances be Infinite (None)
+        matrix = {i: {'distance': None, 'prev': None} for i in self.__vertices}
+
+        # Let distance of start vertex from start vertex = 0
+        matrix[u]['distance'] = 0
+
+        # Repeat until all vertices be visited
+        while unvisited:
+            # Visit the unvisited vextex with the smallest known distance from the start vertex
+            smallest_distance_vextex = unvisited[0]
+            smallest_distance = matrix[smallest_distance_vextex]['distance']
+
+            for i in unvisited:
+                if matrix[i]['distance'] is not None and (smallest_distance is None or matrix[i]['distance'] < smallest_distance):
+                    smallest_distance_vextex = i
+                    smallest_distance = matrix[smallest_distance_vextex]['distance']
+            
+            unvisited.remove(smallest_distance_vextex)
+
+            # For the current vertex, calculate distance of each neighbour
+            neighbours = self.__nodes[smallest_distance_vextex].keys()
+
+            for n in neighbours:
+                total = smallest_distance + self.__nodes[smallest_distance_vextex][n][0]
+                
+                # Update distance if smaller than current
+                if matrix[n]['distance'] is None or matrix[n]['distance'] > total:
+                    matrix[n]['distance'] = total
+                    matrix[n]['prev'] = smallest_distance_vextex
+
+            # Add current vertex to list of visited
+            visited.append(smallest_distance_vextex)
+
+        # Path
+        path = []
+        curr = v
+
+        while matrix[curr]['prev'] != None:
+            path.insert(0, matrix[curr]['prev'])
+            curr = matrix[curr]['prev']
+
+        path.append(matrix[v]["distance"])
+
+        # Return
+        return path
+
     def __str__(self):
         ''' Print in graphviz style '''
         return 'Digraph G {{\n\trankdir="LR"; \n\t{}\n \n\t{} \n}}'.format('\n\t'.join(
@@ -68,3 +122,8 @@ if __name__ == '__main__':
     d.add_edge('E', 'C', 5)
 
     print(d)
+
+    print('DIJKSTRA')
+    print('FROM: A')
+    print('TO: C')
+    print(' -> '.join([str(i) for i in d.dijkstra('A', 'C')]))
